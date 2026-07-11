@@ -31,3 +31,9 @@ calibration:
   dataset: data/calibration_wikitext2_128.jsonl
   num_samples: 128
   seq_len: 2048
+
+llamacpp:
+  repo_dir: /home/aauf1/LLM_serving_benchmarking/llama.cpp
+  convert_script: /home/aauf1/LLM_serving_benchmarking/llama.cpp/convert_hf_to_gguf.py
+  quantize_binary: /home/aauf1/LLM_serving_benchmarking/llama.cpp/build/bin/llama-quantize
+  server_binary: /home/aauf1/LLM_serving_benchmarking/llama.cpp/build/bin/llama-server
