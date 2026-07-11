@@ -1,0 +1,33 @@
+tiers:
+  - name: sanity
+    model: Qwen/Qwen2.5-1.5B-Instruct
+    fp16_size_gb: 3
+  - name: comfortable
+    model: Qwen/Qwen2.5-7B-Instruct
+    fp16_size_gb: 16
+  - name: transition
+    model: Qwen/Qwen2.5-14B-Instruct
+    fp16_size_gb: 28
+  - name: ceiling
+    model: Qwen/Qwen2.5-32B-Instruct
+    fp16_size_gb: 64
+
+methods:
+  - fp16
+  - int8
+  - gptq
+  - awq
+  - gguf_q4_k_m
+
+frameworks:
+  - transformers
+  - vllm
+  - llamacpp
+  - tensorrt
+
+concurrency_levels: [1, 4, 8, 16]
+
+calibration:
+  dataset: data/calibration_wikitext2_128.jsonl
+  num_samples: 128
+  seq_len: 2048

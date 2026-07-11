@@ -1,0 +1,14 @@
+torch
+transformers
+accelerate
+bitsandbytes
+datasets
+auto-gptq
+optimum
+autoawq
+vllm
+pyyaml
+requests
+nvidia-ml-py
+matplotlib
+pandas
