@@ -6,6 +6,7 @@ from pathlib import Path
 from datasets import load_dataset
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def build_calibration_set(num_samples: int = 128, seq_len: int = 2048) -> None:
