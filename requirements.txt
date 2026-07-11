@@ -1,12 +1,21 @@
-torch
-transformers
+# Install in this order - do NOT pip install everything in one shot.
+# torch/transformers are omitted here on purpose: installing vllm pulls in the
+# correct CUDA-matched torch/transformers automatically. Installing them unpinned
+# alongside vllm in a single command lets pip's resolver swap in a CPU-only torch
+# build and break CUDA - this happened once already on the workstation.
+#
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124   (match your driver, see pytorch.org/get-started/locally)
+#   python -c "import torch; print(torch.__version__, torch.cuda.is_available())"   # must print True
+#   pip install vllm
+#   python -c "import torch; print(torch.__version__, torch.cuda.is_available())"   # re-check, must still print True
+#   pip install -r requirements.txt   (this file, after the above two are confirmed working)
+
 accelerate
 bitsandbytes
 datasets
 auto-gptq
 optimum
 autoawq
-vllm
 pyyaml
 requests
 nvidia-ml-py
