@@ -13,7 +13,7 @@
 accelerate
 bitsandbytes
 datasets
-auto-gptq
+gptqmodel
 optimum
 autoawq
 pyyaml
