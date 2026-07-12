@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -30,7 +31,7 @@ class GGUFQuantizer(BaseQuantizer):
 
             subprocess.run(
                 [
-                    "python3",
+                    sys.executable,
                     _LLAMACPP_CONFIG["convert_script"],
                     model_path,
                     "--outfile", str(f16_path),
