@@ -28,8 +28,8 @@ frameworks:
 concurrency_levels: [1, 4, 8, 16]
 
 calibration:
-  dataset: data/calibration_wikitext2_128.jsonl
-  num_samples: 128
+  dataset: data/calibration_wikitext2_256.jsonl
+  num_samples: 256
   seq_len: 2048
 
 llamacpp:
