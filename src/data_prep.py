@@ -9,11 +9,11 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def build_calibration_set(num_samples: int = 128, seq_len: int = 2048) -> None:
+def build_calibration_set(num_samples: int = 256, seq_len: int = 2048) -> None:
     ds = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
     texts = [ex["text"] for ex in ds if len(ex["text"].strip()) > 0]
     samples = texts[:num_samples]
-    out_path = DATA_DIR / "calibration_wikitext2_128.jsonl"
+    out_path = DATA_DIR / f"calibration_wikitext2_{num_samples}.jsonl"
     with open(out_path, "w", encoding="utf-8") as f:
         for text in samples:
             f.write(json.dumps({"text": text[:seq_len]}) + "\n")

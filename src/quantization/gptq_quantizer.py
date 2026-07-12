@@ -9,7 +9,7 @@ from transformers import AutoTokenizer
 from src.interfaces.results import QuantizationResult
 from src.quantization.base import BaseQuantizer
 
-CALIBRATION_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "calibration_wikitext2_128.jsonl"
+CALIBRATION_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "calibration_wikitext2_256.jsonl"
 
 
 class GPTQQuantizer(BaseQuantizer):
@@ -27,7 +27,7 @@ class GPTQQuantizer(BaseQuantizer):
             with open(CALIBRATION_PATH, "r", encoding="utf-8") as f:
                 for line in f:
                     text = json.loads(line)["text"]
-                    calibration_dataset.append(tokenizer(text))
+                    calibration_dataset.append(dict(tokenizer(text)))
 
             quant_config = QuantizeConfig(bits=4, group_size=128)
             model = GPTQModel.load(model_path, quant_config)
