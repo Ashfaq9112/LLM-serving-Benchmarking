@@ -22,13 +22,17 @@ class VLLMServerBackend(BaseServingBackend):
                 sys.executable, "-m", "vllm.entrypoints.openai.api_server",
                 "--model", model_path,
                 "--port", str(self.port),
-            ]
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
         )
         deadline = time.monotonic() + self.startup_timeout_seconds
         while time.monotonic() < deadline:
             if self.process.poll() is not None:
+                output = self.process.stdout.read()
                 raise RuntimeError(
-                    f"vLLM server process exited during startup (code {self.process.returncode})"
+                    f"vLLM server process exited during startup (code {self.process.returncode}):\n{output}"
                 )
             try:
                 if requests.get(f"{self.base_url}/health", timeout=2).status_code == 200:
