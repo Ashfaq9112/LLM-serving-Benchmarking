@@ -1,6 +1,8 @@
 import json
+import os
 import subprocess
 import sys
+import tempfile
 import time
 
 import requests
@@ -15,22 +17,34 @@ class VLLMServerBackend(BaseServingBackend):
         self.startup_timeout_seconds = startup_timeout_seconds
         self.base_url = f"http://localhost:{port}"
         self.process: subprocess.Popen | None = None
+        self.log_file = None
 
     def load(self, model_path: str) -> None:
+        # conda env's bin/ (where `ninja` and other build tools live) is prepended in case the
+        # launching process (e.g. a Jupyter kernel) doesn't have it on PATH already - vLLM's
+        # FlashInfer sampler JIT-compiles a CUDA kernel on first use and needs `ninja` for that.
+        env = os.environ.copy()
+        env_bin_dir = os.path.dirname(sys.executable)
+        env["PATH"] = env_bin_dir + os.pathsep + env.get("PATH", "")
+
+        self.log_file = tempfile.NamedTemporaryFile(
+            mode="w+", prefix="vllm_server_", suffix=".log", delete=False
+        )
         self.process = subprocess.Popen(
             [
                 sys.executable, "-m", "vllm.entrypoints.openai.api_server",
                 "--model", model_path,
                 "--port", str(self.port),
             ],
-            stdout=subprocess.PIPE,
+            stdout=self.log_file,
             stderr=subprocess.STDOUT,
-            text=True,
+            env=env,
         )
         deadline = time.monotonic() + self.startup_timeout_seconds
         while time.monotonic() < deadline:
             if self.process.poll() is not None:
-                output = self.process.stdout.read()
+                self.log_file.seek(0)
+                output = self.log_file.read()
                 raise RuntimeError(
                     f"vLLM server process exited during startup (code {self.process.returncode}):\n{output}"
                 )
@@ -80,6 +94,10 @@ class VLLMServerBackend(BaseServingBackend):
                 self.process.kill()
                 self.process.wait()
             self.process = None
+        if self.log_file is not None:
+            self.log_file.close()
+            os.remove(self.log_file.name)
+            self.log_file = None
 
     def _served_model_name(self) -> str:
         response = requests.get(f"{self.base_url}/v1/models", timeout=5)
