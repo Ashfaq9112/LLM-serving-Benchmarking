@@ -5,11 +5,17 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+import yaml
 
 import requests
 
 from src.interfaces.results import GenerationResult
 from src.serving.base import BaseServingBackend
+
+
+CONFIG_PATH = Path(__file__).resolve().parent.parent.parent / "config" / "models.yaml"
+with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+    _TRTLLM_CONFIG = yaml.safe_load(f)["tensorrt"]
 
 
 class TensorRTLLMServerBackend(BaseServingBackend):
@@ -23,22 +29,22 @@ class TensorRTLLMServerBackend(BaseServingBackend):
     def load(self, model_path: str) -> None:
         # same PATH concern as VLLMServerBackend - trtllm-serve is a console script installed
         # next to python in the conda env, but a Jupyter kernel may not have that dir on PATH.
-        env = os.environ.copy()
-        env_bin_dir = os.path.dirname(sys.executable)
-        env["PATH"] = env_bin_dir + os.pathsep + env.get("PATH", "")
+        # env = os.environ.copy()
+        # env_bin_dir = os.path.dirname(sys.executable)
+        # env["PATH"] = env_bin_dir + os.pathsep + env.get("PATH", "")
 
         self.log_file = tempfile.NamedTemporaryFile(
             mode="w+", prefix="trtllm_server_", suffix=".log", delete=False
         )
         self.process = subprocess.Popen(
             [
-                "trtllm-serve", model_path,
+                _TRTLLM_CONFIG["server_binary"], model_path,
                 "--host", "localhost",
                 "--port", str(self.port),
             ],
             stdout=self.log_file,
             stderr=subprocess.STDOUT,
-            env=env,
+            
         )
         deadline = time.monotonic() + self.startup_timeout_seconds
         while time.monotonic() < deadline:
