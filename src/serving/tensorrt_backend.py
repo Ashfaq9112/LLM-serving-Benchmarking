@@ -1,7 +1,6 @@
 import json
 import os
 import subprocess
-import sys
 import tempfile
 import time
 from pathlib import Path
@@ -27,11 +26,14 @@ class TensorRTLLMServerBackend(BaseServingBackend):
         self.log_file = None
 
     def load(self, model_path: str) -> None:
-        # same PATH concern as VLLMServerBackend - trtllm-serve is a console script installed
-        # next to python in the conda env, but a Jupyter kernel may not have that dir on PATH.
-        # env = os.environ.copy()
-        # env_bin_dir = os.path.dirname(sys.executable)
-        # env["PATH"] = env_bin_dir + os.pathsep + env.get("PATH", "")
+        # the harness (Jupyter kernel) can run in a different conda env than the trtllm
+        # server itself - inheriting the harness's PATH/LD_LIBRARY_PATH lets the subprocess
+        # pick up a conflicting libmpi.so from the wrong env, so build the subprocess env
+        # explicitly from the trtllm env derived from the configured server_binary path.
+        trtllm_prefix = os.path.dirname(os.path.dirname(_TRTLLM_CONFIG["server_binary"]))
+        env = os.environ.copy()
+        env["PATH"] = os.path.join(trtllm_prefix, "bin") + os.pathsep + env.get("PATH", "")
+        env["LD_LIBRARY_PATH"] = os.path.join(trtllm_prefix, "lib") + os.pathsep + env.get("LD_LIBRARY_PATH", "")
 
         self.log_file = tempfile.NamedTemporaryFile(
             mode="w+", prefix="trtllm_server_", suffix=".log", delete=False
@@ -44,7 +46,7 @@ class TensorRTLLMServerBackend(BaseServingBackend):
             ],
             stdout=self.log_file,
             stderr=subprocess.STDOUT,
-            
+            env=env,
         )
         deadline = time.monotonic() + self.startup_timeout_seconds
         while time.monotonic() < deadline:
