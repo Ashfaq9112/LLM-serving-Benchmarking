@@ -21,3 +21,6 @@ data/*.cache
 .venv/
 venv/
 .env
+
+# personal learning notes, not part of the project
+learnings/
