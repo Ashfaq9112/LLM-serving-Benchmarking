@@ -127,9 +127,7 @@ class Evaluator:
 
             
     def run_benchmark(self):
-        for l in BENCHMARK_CONCURRENCY_LEVELS:
-            joules = self.run_at_concurrency(l)
-
+        return [self.run_at_concurrency(c) for c in BENCHMARK_CONCURRENCY_LEVELS]
 
 
 
