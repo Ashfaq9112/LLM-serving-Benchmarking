@@ -86,3 +86,54 @@ class GGUFQuantizer(BaseQuantizer):
                 success=False,
                 error=str(e),
             )
+
+    def quantize_f16(self, model_path: str, output_dir: str) -> QuantizationResult:
+        """Converts to GGUF F16 only, skipping the llama-quantize step (for the FP16-via-llama.cpp row)."""
+        start = time.time()
+        try:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            f16_path = Path(output_dir) / "model-f16.gguf"
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    _LLAMACPP_CONFIG["convert_script"],
+                    model_path,
+                    "--outfile", str(f16_path),
+                    "--outtype", "f16",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            size_gb = f16_path.stat().st_size / (1024**3)
+
+            return QuantizationResult(
+                model=model_path,
+                method="gguf_f16",
+                output_path=str(f16_path),
+                size_gb=size_gb,
+                wall_clock_seconds=time.time() - start,
+                success=True,
+            )
+        except subprocess.CalledProcessError as e:
+            return QuantizationResult(
+                model=model_path,
+                method="gguf_f16",
+                output_path=output_dir,
+                size_gb=0.0,
+                wall_clock_seconds=time.time() - start,
+                success=False,
+                error=e.stderr,
+            )
+        except Exception as e:
+            return QuantizationResult(
+                model=model_path,
+                method="gguf_f16",
+                output_path=output_dir,
+                size_gb=0.0,
+                wall_clock_seconds=time.time() - start,
+                success=False,
+                error=str(e),
+            )
