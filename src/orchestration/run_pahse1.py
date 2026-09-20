@@ -45,6 +45,7 @@ def run_orchestrator():
     gguf_f16_result = GGUFQuantizer().quantize_f16(MODEL, str(CHECKPOINT_DIR / "gguf_f16"))
     print("gguf f16 quantize:", gguf_f16_result)
     gguf_f16_path = gguf_f16_result.output_path
+    return  # quantize-only for now; evaluation loops below are not run yet
 
     for model_path, method in [(MODEL, "fp16"), (awq_path, "awq"), (gptq_path, "gptq")]:
         backend = InProcessBackend()
@@ -78,6 +79,9 @@ def run_orchestrator():
         benchmark_result = evaluator.run_benchmark()
         save_result(method, "llamacpp", vram_result, benchmark_result)
         backend.unload()
+
+if __name__ == "__main__":
+    run_orchestrator()
 
 
 

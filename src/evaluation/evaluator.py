@@ -12,9 +12,9 @@ import time
 # Rough token-count proxy: repeating a short word gets close enough to the target
 # token count for OOM-sweep purposes without needing tokenizer access through the
 # BaseServingBackend interface (which only exposes generate(), not the tokenizer).
-CONTEXT_LEN_CANDIDATES = [512, 1024, 2048, 4096, 8192, 16384, 32768]
-BATCH_SIZE_CANDIDATES = [1, 2, 4, 8, 16, 32]
-BENCHMARK_CONCURRENCY_LEVELS = [1, 4, 8, 16]
+CONTEXT_LEN_CANDIDATES = [2048, 4096, 8192, 16384, 32768]
+BATCH_SIZE_CANDIDATES = [1, 4, 16, 32]
+BENCHMARK_CONCURRENCY_LEVELS = [1, 8, 16]
 
 class Evaluator:
     def __init__(self, backend: BaseServingBackend, model: str, method: str, framework: str):
